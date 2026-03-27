@@ -664,20 +664,28 @@ function colorToRGBA(colorStr) {
 }
 
 function isColorSimilar(data, pos, targetColor, tolerance) {
-    // Calculates color distance using Euclidean distance in RGB space.
-    // A higher tolerance will fill more "similar" colors, which is needed for anti-aliased edges.
+    // First, check for a significant difference in alpha. This is the most reliable way to find a "hard" edge
+    // and prevents the fill from leaking from transparent areas into opaque lines of the same RGB color (e.g., black).
+    if (Math.abs(data[pos + 3] - targetColor[3]) > tolerance) {
+        return false;
+    }
+
+    // If alpha is similar, check the RGB distance.
     const distance = Math.sqrt(
         Math.pow(data[pos] - targetColor[0], 2) +
         Math.pow(data[pos + 1] - targetColor[1], 2) +
         Math.pow(data[pos + 2] - targetColor[2], 2)
     );
-    return distance <= tolerance;
+
+    // We use a higher tolerance for RGB to account for anti-aliasing gradients.
+    // A pixel is similar if its RGB values are reasonably close to the target, provided the alpha was also close.
+    return distance <= (tolerance * 3);
 }
 
 function floodFill(startX, startY, fillColorStr) {
     startX = Math.floor(startX);
     startY = Math.floor(startY);
-    const tolerance = 16; // Lower tolerance is more precise. Adjust if it's not filling enough of the anti-aliased edge.
+    const tolerance = 32; // Increased tolerance for better anti-aliasing fill
     let w = canvas.width;
     let h = canvas.height;
     let imgData = ctx.getImageData(0, 0, w, h);
@@ -691,7 +699,8 @@ function floodFill(startX, startY, fillColorStr) {
     const initialDistance = Math.sqrt(
         Math.pow(targetColor[0] - fillColor[0], 2) +
         Math.pow(targetColor[1] - fillColor[1], 2) +
-        Math.pow(targetColor[2] - fillColor[2], 2)
+        Math.pow(targetColor[2] - fillColor[2], 2) +
+        Math.pow(targetColor[3] - fillColor[3], 2) // Include alpha in this check
     );
     if (initialDistance <= tolerance) return;
 

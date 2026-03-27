@@ -36,7 +36,7 @@ body {
     min-height: 100vh; /* Ensure body takes full viewport height */
     background: linear-gradient(135deg, #f0f2f5 0%, #e0e5ec 100%); /* Subtle gradient background */
     transition: background-color 0.3s ease; /* Smooth transition for dark mode */
-    padding-top: 95px; /* Create space for the fixed header */
+    padding-top: 125px; /* Create extra space below the fixed header */
     padding-bottom: 95px; /* Create space for the fixed footer */
 }
 
@@ -44,7 +44,7 @@ body {
     position: relative;
     margin: 0 auto;
     max-width: calc(100vw - 60px);
-    max-height: calc(100vh - 190px);
+    max-height: calc(100vh - 220px); /* Adjust max-height to account for new padding */
     width: 1920px;
     height: 1080px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
@@ -80,7 +80,7 @@ canvas {
 
 .text-nav {
     position: fixed;
-    top: 80px; /* Position below the branding */
+    top: 110px; /* Position below the branding */
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.9); /* Slightly more opaque for better readability */
     backdrop-filter: blur(18px); /* Increased blur for a stronger glass effect */
