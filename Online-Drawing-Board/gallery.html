@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Gallery - Atharv's Drawing Board</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="gallery.js" defer></script>
+</head>
+<body>
+    <div class="header-branding" style="position: relative; top: 20px; margin-bottom: 40px;">
+        <div class="brand">My Cloud Gallery ☁️</div>
+        <div class="tagline">View and manage your saved artworks</div>
+    </div>
+    
+    <div class="gallery-controls">
+        <a href="index.html" class="back-btn">⬅️ Back to Drawing Board</a>
+    </div>
+
+    <div class="gallery-container" id="gallery-container">
+        <div class="loading-text" id="loading-text">Loading your masterpieces...</div>
+    </div>
+
+    <!-- Full Screen Image Modal -->
+    <div id="image-modal" class="modal">
+        <span class="modal-close" id="modal-close">&times;</span>
+        <img class="modal-content" id="modal-img">
+    </div>
+</body>
+</html>

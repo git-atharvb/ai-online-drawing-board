@@ -7,6 +7,7 @@
     <title> Atharv's Drawing Board 🎨</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
+    <script type="module" src="app-auth.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -17,6 +18,12 @@
         <div class="tagline">
             Imagine, Sketch, Reconcise
         </div>
+    </div>
+
+    <div class="user-profile" id="user-profile" style="display: none;">
+        <img id="profile-pic" src="" alt="Profile">
+        <span id="profile-email"></span>
+        <button id="logout-btn" title="Logout">🚪</button>
     </div>
 
     <div class="canvas-container">
@@ -74,6 +81,8 @@
         <button class="clear" title="Clear Canvas">🗑️</button> <!-- Clear -->
         <button class="save" title="Save as PNG">💾</button> <!-- Save PNG -->
         <button class="save-pdf" title="Save as PDF">📄</button> <!-- Save PDF -->
+        <button id="save-cloud-btn" title="Save to Cloud">☁️</button> <!-- Save to Cloud -->
+        <button id="gallery-btn" title="My Gallery">🖼️</button> <!-- View Gallery -->
         <input type="color" id="favcolor" value="#000000" title="Custom Brush Color">
         <input type="range" name="ageInputName" id="ageInputId" value="5" min="1" max="50" oninput="ageOutputId.value = ageInputId.value" title="Brush Size">
         <output id="ageOutputId">5</output> <!-- Brush Size Output -->
