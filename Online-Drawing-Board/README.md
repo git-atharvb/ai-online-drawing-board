@@ -1,51 +1,48 @@
 # Online Drawing App 🎨
 
-## Imagine, Sketch, Reconcise
+### Imagine, Sketch, Revise
 
-Welcome to **Online Drawing App**, a feature-rich online drawing application built with HTML, CSS, and JavaScript. This app provides a versatile canvas for creativity, allowing users to sketch, draw shapes, add text, upload images, and much more, all within a modern and attractive user interface.
+Welcome to **Online Drawing App**, a feature-rich, browser-based drawing application built with vanilla HTML, CSS, and JavaScript. This app provides a versatile digital canvas for your creativity, allowing you to sketch freely, draw precise shapes, add stylized text, import images, and much more—all within a clean, modern, and responsive interface.
 
-## ✨ Features
+<!-- Add a screenshot or GIF of the application here -->
+!Online Drawing App Screenshot
 
-This application comes packed with a wide array of functionalities to enhance your drawing experience:
+## ✨ Core Features
 
-*   **Freehand Drawing:** Draw freely with adjustable brush sizes and colors.
-*   **Shape Tools:** Create perfect geometric shapes including:
-    *   Straight Lines
-    *   Rectangles
-    *   Circles
-    *   Triangles
-    *   Stars
-*   **Eraser Tool:** Precisely erase parts of your drawing.
-*   **Color Palette:** A vibrant rainbow color palette for quick color selection, plus black and white.
-*   **Custom Color Picker:** Choose any color imaginable for your brush or text.
-*   **Brush Size Control:** Adjust the thickness of your brush strokes and text size with a convenient slider.
-*   **Undo/Redo Functionality:** Easily correct mistakes or revert changes with unlimited undo/redo history.
-*   **Background Image Upload:** Upload images to your canvas, then drag and resize them interactively before placing them permanently.
-*   **Advanced Text Tool:**
-    *   Add text anywhere on the canvas.
-    *   Choose from various **Font Families**.
-    *   Adjust **Font Size**.
-    *   Select **Text Color**.
-    *   Apply **Bold**, *Italic*, and <ins>Underline</ins> styles.
-*   **Fill (Paint Bucket) Tool:** Fill enclosed areas with color using an intelligent flood-fill algorithm that handles anti-aliased edges accurately.
-*   **Save Options:**
-    *   **Save as PNG:** Download your artwork as a PNG image, preserving transparency or adding a solid background based on the current theme.
-    *   **Save as PDF:** Export your drawing as a PDF document.
-*   **Dark/Light Mode Toggle:** Switch between a comfortable dark theme and a bright light theme.
-*   **Responsive & Centered Canvas:** The drawing canvas is dynamically sized and centered, providing an optimal workspace on various screen sizes.
-*   **Modern UI/UX:** Features a clean, glassmorphism-inspired design with custom tooltips for an intuitive user experience.
-*   **Branding:** Integrated branding with a tagline at the top of the application.
+This application is packed with a wide array of functionalities to enhance your drawing experience:
+
+### Drawing & Editing Tools
+*   **Versatile Brush:** Draw freely with an adjustable brush size and a full-spectrum color picker.
+*   **Shape Tools:** Create perfect geometric shapes including lines, rectangles, circles, triangles, and stars.
+*   **Eraser:** Precisely erase parts of your drawing.
+*   **Fill (Paint Bucket):** Fill enclosed areas with color using an intelligent flood-fill algorithm that correctly handles anti-aliased edges.
+*   **Undo/Redo:** Easily step backward and forward through your drawing history.
+*   **Clear Canvas:** Start fresh with a single click.
+
+### Content & Customization
+*   **Advanced Text Tool:** Add text anywhere on the canvas with controls for font family, size, color, and style (bold, italic, underline).
+*   **Image Upload:** Import images onto your canvas. Interactively drag, resize, and position them before stamping them onto your artwork.
+*   **Color Palette:** Includes a quick-access palette of vibrant colors alongside a custom color picker for unlimited options.
+
+### UI & Experience
+*   **Light & Dark Modes:** Seamlessly toggle between a comfortable dark theme and a classic light theme.
+*   **Responsive Design:** The entire interface, including the canvas, is fully responsive, providing an optimal experience on both desktop and mobile devices.
+*   **Custom Tooltips:** All tools feature custom-styled tooltips for a clean and intuitive user experience.
+
+### Exporting
+*   **Save as PNG:** Download your artwork as a high-quality PNG file.
+*   **Save as PDF:** Export your drawing as a PDF document, perfect for sharing or printing.
 
 ## 🚀 Technologies Used
 
-*   **HTML5:** For structuring the web page.
-*   **CSS3:** For styling and creating the attractive user interface, including glassmorphism effects and responsive design.
-*   **JavaScript (ES6+):** For all interactive functionalities, drawing logic, and state management.
-*   **jsPDF Library:** For generating PDF documents from the canvas content.
+*   **HTML5:** For structuring the web page and its elements.
+*   **CSS3:** For all styling, including the modern UI, responsive design, and theming (light/dark modes) using CSS Variables.
+*   **JavaScript (ES6+):** Powers all interactive functionalities, drawing logic, state management, and DOM manipulation.
+*   **jsPDF Library:** Used for the "Save as PDF" export functionality.
 
-## ⚙️ Setup and Installation
+## ⚙️ Getting Started
 
-To get a local copy up and running, follow these simple steps:
+This project is a client-side application and requires no special build steps or server environment.
 
 1.  **Clone the repository:**
     ```bash
@@ -57,25 +54,22 @@ To get a local copy up and running, follow these simple steps:
     cd Drawing-App-main/Online-Drawing-Board
     ```
 3.  **Open `index.html`:**
-    Simply open the `index.html` file in your preferred web browser. No server setup is required as it's a client-side application.
+    Simply open the `index.html` file in your favorite web browser to run the application.
 
-## 🎨 Usage
+## 🎨 How to Use
 
-1.  **Drawing:** Select the "Freehand" tool from the dropdown or any shape tool. Choose a color from the palette or custom color picker, adjust the brush size, and start drawing on the canvas.
-2.  **Eraser:** Click the "🧼" (Eraser) button to switch to eraser mode.
-3.  **Text:** Click the "✍️" (Add Text) button. A text formatting toolbar will appear at the top. Click on the canvas to place a text input field, type your text, apply styles, and press Enter or click away to finalize.
-4.  **Fill:** Select "Fill (Paint Bucket)" from the dropdown and click on any enclosed area on the canvas to fill it with the current brush color.
-5.  **Upload Image:** Click the "⬆️" (Upload Image) button. Select an image file. The image will appear on the canvas with drag and resize handles. Adjust as needed, then click "✔️" to confirm or "❌" to cancel.
-6.  **Undo/Redo:** Use the "↩️" (Undo) and "↪️" (Redo) buttons to navigate through your drawing history.
-7.  **Clear Canvas:** Click the "🗑️" (Clear Canvas) button to clear everything from the canvas.
-8.  **Save:**
-    *   "💾" (Save as PNG) will download your drawing as a PNG image.
-    *   "📄" (Save as PDF) will download your drawing as a PDF document.
-9.  **Theme Toggle:** Click the "🌙" / "☀️" button to switch between dark and light modes.
+1.  **Select a Tool:** Use the dropdown menu to choose between `Freehand`, `Line`, `Rectangle`, `Circle`, etc.
+2.  **Customize Brush:** Use the color swatches, custom color picker, and size slider to configure your brush.
+3.  **Draw:** Click and drag on the canvas to draw.
+4.  **Add Text:** Click the "✍️" (Add Text) button. A text formatting toolbar will appear. Click on the canvas to place your text, apply styles, and press `Enter` or click "Done" to finalize.
+5.  **Upload Image:** Click the "⬆️" (Upload Image) button. After selecting a file, use the handles to drag and resize the image, then click "✔️" to confirm.
+6.  **Manage History:** Use the "↩️" (Undo) and "↪️" (Redo) buttons to navigate your changes.
+7.  **Save Your Work:** Click "💾" (Save as PNG) or "📄" (Save as PDF) to export your creation.
+8.  **Toggle Theme:** Click the "🌙" / "☀️" button to switch between dark and light modes at any time.
 
 ## 👨‍💻 Credits
 
-&copy;  Programmed & Managed by Atharv Bowlekar - Sept 2025
+&copy; Programmed & Managed by Atharv Bowlekar - 2024
 
 ---
 ```

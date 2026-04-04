@@ -1,5 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
+:root {
+    /* Color Scheme */
+    --accent-color: #007AFF;
+    
+    /* Light Theme */
+    --bg-light: #f8f9fa;
+    --canvas-bg-light: #ffffff;
+    --ui-bg-light: rgba(255, 255, 255, 0.7);
+    --text-color-light: #212529;
+    --text-secondary-light: #6c757d;
+    --border-color-light: #dee2e6;
+    --hover-bg-light: #e9ecef;
+
+    /* Dark Theme */
+    --bg-dark: #121212;
+    --canvas-bg-dark: #1c1c1e;
+    --ui-bg-dark: rgba(28, 28, 30, 0.75);
+    --text-color-dark: #e5e5e5;
+    --text-secondary-dark: #868e96;
+    --border-color-dark: #343a40;
+    --hover-bg-dark: #343a40;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -8,47 +31,50 @@
 }
 
 .brand {
-    font-size: 2.4rem; /* Even larger for more impact */
+    font-size: 1.8rem; /* Cleaner, smaller size */
     font-weight: 600;
-    color: #333;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--text-color-light);
+    text-shadow: none; /* Remove shadow for a flatter look */
     transition: color 0.3s ease;
-    margin-bottom: 5px; /* Space between brand and tagline */
+    margin-bottom: 2px;
 }
 
 .tagline {
-    font-size: 1.1rem; /* Slightly larger tagline */
-    color: #666; /* Softer gray for tagline */
+    font-size: 0.9rem;
+    color: var(--text-secondary-light);
     transition: color 0.3s ease;
 }
 
 .header-branding {
     position: fixed;
-    top: 15px; /* Position from the top */
+    top: 20px; /* Adjusted position */
     left: 50%;
-    transform: translateX(-50%); /* Center horizontally */
-    text-align: center; /* Center text within the container */
+    transform: translateX(-50%);
+    text-align: center;
     z-index: 1001;
 }
 
 body {
     overflow: hidden;
-    min-height: 100vh; /* Ensure body takes full viewport height */
-    background: linear-gradient(135deg, #f0f2f5 0%, #e0e5ec 100%); /* Subtle gradient background */
-    transition: background-color 0.3s ease; /* Smooth transition for dark mode */
-    padding-top: 125px; /* Create extra space below the fixed header */
-    padding-bottom: 95px; /* Create space for the fixed footer */
+    min-height: 100vh;
+    background: var(--bg-light);
+    color: var(--text-color-light);
+    transition: background 0.3s ease, color 0.3s ease;
+    padding-top: 90px; /* Reduced top padding */
+    padding-bottom: 100px; /* Space for bottom nav */
 }
 
 .canvas-container {
     position: relative;
     margin: 0 auto;
     max-width: calc(100vw - 60px);
-    max-height: calc(100vh - 220px); /* Adjust max-height to account for new padding */
+    max-height: calc(100vh - 190px); /* 90px top + 100px bottom */
     width: 1920px;
     height: 1080px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    border-radius: 15px;
+    border: 1px solid var(--border-color-light); /* Cleaner border */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05); /* More subtle shadow */
+    border-radius: 12px; /* Consistent rounding */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 canvas {
@@ -58,8 +84,9 @@ canvas {
     width: 100%;
     height: 100%;
     cursor: crosshair;
-    background-color: #ffffff; /* Explicit canvas background */
-    border-radius: 15px; /* Rounded corners for the canvas */
+    background-color: var(--canvas-bg-light);
+    border-radius: 12px; /* Match container */
+    transition: background-color 0.3s ease;
 }
 
 #overlay-canvas {
@@ -78,115 +105,115 @@ canvas {
     padding: 2px;
 }
 
-.text-nav {
+.nav, .text-nav, .placement-controls {
     position: fixed;
-    top: 110px; /* Position below the branding */
+    left: 50%;
     transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9); /* Slightly more opaque for better readability */
-    backdrop-filter: blur(18px); /* Increased blur for a stronger glass effect */
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    border-radius: 20px;
-    display: none;
-    align-items: center;
-    gap: 12px; /* Slightly increased gap */
-    padding: 10px 20px;
-    z-index: 1000;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.text-nav select,
-.text-nav input[type="number"],
-.text-nav input[type="color"] {
-    padding: 6px 12px; /* Slightly more padding */
-    border-radius: 12px; /* Softer corners */
-    border: 1px solid #d1d1d6; /* Lighter, more subtle border */
-    outline: none;
-    background: #f9f9f9; /* Off-white background */
-    color: #333;
-    font-family: inherit;
-}
-
-.text-style-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    padding: 0;
-    font-size: 16px;
+    background: var(--ui-bg-light);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 16px; /* Modern, less rounded */
     display: flex;
-    justify-content: center;
     align-items: center;
-}
-
-.text-style-btn.active {
-    background: #007aff;
-    color: white;
+    padding: 8px; /* Padding inside, gap will handle spacing */
+    gap: 8px;
+    z-index: 1000;
+    transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .nav {
-    position: fixed;
     bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.9); /* Slightly more opaque for better readability */
-    backdrop-filter: blur(18px); /* Increased blur for a stronger glass effect */
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-    border-radius: 50px;
-    display: flex;
-    align-items: center; /* Ensure vertical alignment */
-    gap: 15px;
-    padding: 10px 25px;
-    z-index: 1000;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 8px 12px;
+}
+
+.text-nav {
+    top: 95px; /* Below new header position */
+    display: none;
     flex-wrap: wrap;
     justify-content: center;
 }
 
 .placement-controls {
-    position: fixed;
-    bottom: 110px; /* Above the main nav */
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 100px; /* Above the main nav */
     display: none; /* Hidden by default */
-    gap: 15px;
     z-index: 1001;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(18px);
-    padding: 8px 15px;
-    border-radius: 50px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+/* --- General Control Styling --- */
+button, select, input {
+    border: none;
+    background: transparent;
+    color: var(--text-color-light);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    font-family: 'Poppins', sans-serif;
+    outline: none;
+}
+
+/* --- Buttons --- */
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    font-size: 1.4rem; /* Good size for emojis */
+    color: #343a40;
+}
+
+button:hover {
+    background: var(--hover-bg-light);
+}
+
+.text-style-btn.active {
+    background: var(--accent-color);
+    color: white;
 }
 
 #confirm-placement {
-    background-color: #34c759; /* Green */
+    background-color: #34c759; color: white;
 }
 #confirm-placement:hover {
     background-color: #30b351;
 }
 
 #cancel-placement {
-    background-color: #ff3b30; /* Red */
+    background-color: #ff3b30; color: white;
 }
 #cancel-placement:hover {
-    background-color: #ff453a;
+    background-color: #e02b21;
 }
 
+button.eraser {
+    color: #ff3b30;
+}
+button.eraser:hover {
+    background: #ff3b301a; /* A light red background on hover */
+    color: #ff3b30;
+}
+
+/* --- Color Swatches --- */
 .clr {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 3px solid transparent;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1) inset;
+    transition: border-color 0.2s ease, transform 0.2s ease;
 }
 
 .clr:hover {
-    transform: scale(1.2);
+    transform: scale(1.1);
+    border-color: var(--accent-color);
 }
 
-/* Dynamically setting background colors from CSS */
 .clr[data-clr="#000"] { background-color: #000; }
 .clr[data-clr="red"] { background-color: #ff3b30; }
 .clr[data-clr="orange"] { background-color: #ff9500; }
@@ -194,65 +221,36 @@ canvas {
 .clr[data-clr="purple"] { background-color: #af52de; }
 .clr[data-clr="yellowgreen"] { background-color: #34c759; }
 .clr[data-clr="yellow"] { background-color: #ffcc00; }
-.clr[data-clr="#fff"] { background-color: #fff; border: 1px solid #d1d1d6; }
+.clr[data-clr="#fff"] { background-color: #fff; }
 
-select {
-    padding: 9px 18px; /* Consistent padding with buttons */
-    border: none;
-    border-radius: 25px; /* More rounded */
-    background: #e5e5ea; /* Lighter background for light mode */
-    color: #1c1c1e; /* Darker text for contrast */
-    cursor: pointer;
+/* --- Selects & Inputs --- */
+select, .text-nav input[type="number"] {
+    height: 42px;
+    padding: 0 12px;
+    background: var(--hover-bg-light);
+    border: 1px solid var(--border-color-light);
     font-weight: 500;
-    outline: none;
-    font-family: 'Poppins', sans-serif; /* Ensure Poppins font */
 }
 
-select:hover {
-    background: #d1d1d6; /* Subtle hover effect */
+select {
+    padding-right: 30px; /* Space for dropdown arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23343a40' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
 }
 
 select option {
-    background: #e5e5ea; /* Match select background */
-    color: #1c1c1e;
-}
-
-button {
-    padding: 9px 18px; /* Consistent padding */
-    border: none;
-    border-radius: 25px; /* More rounded */
-    color: white;
-    cursor: pointer;
-    font-size: 1.2rem; /* Larger font for emoji buttons */
-    font-weight: 500;
-    transition: background 0.2s;
-}
-
-/* Default button styling for light mode */
-button:not(.eraser):not(.text-style-btn) { background: #2c2c2e; }
-button:hover:not(.eraser):not(.text-style-btn) {
-    background: #48484a;
-}
-
-button.eraser {
-    background: #ff3b30;
-}
-
-button.eraser:hover {
-    background: #ff453a;
+    background: var(--canvas-bg-light);
+    color: var(--text-color-light);
 }
 
 input[type="color"] {
-    width: 40px; /* Increased width */
-    height: 40px; /* Increased height */
-    border: none;
-    border-radius: 25px; /* Rounded rectangle, consistent with buttons */
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    background: #e5e5ea; /* Match select background */
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1); /* Subtle inner shadow for depth */
-    transition: background 0.2s;
+    width: 42px;
+    height: 42px;
+    padding: 4px; /* Padding around the swatch */
 }
 
 input[type="color"]::-webkit-color-swatch-wrapper {
@@ -260,25 +258,20 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 }
 
 input[type="color"]::-webkit-color-swatch {
-    border: none;
-    border-radius: 20px; /* Keep the inner swatch rounded */
-}
-
-/* Hover effect for color picker */
-input[type="color"]:hover {
-    background: #d1d1d6;
+    border-radius: 6px;
+    border: 1px solid var(--border-color-light);
 }
 
 input[type="range"] {
+    accent-color: var(--accent-color);
     cursor: pointer;
-    accent-color: #2c2c2e;
 }
 
 output {
     font-weight: 600;
     min-width: 25px;
     text-align: center;
-    color: #1c1c1e;
+    color: var(--text-color-light);
 }
 
 footer {
@@ -295,42 +288,202 @@ footer {
 
 /* --- Dark Mode Styles --- */
 body.dark-mode {
-    background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%); /* Darker gradient background */
+    background: var(--bg-dark);
+    color: var(--text-color-dark);
+}
+
+body.dark-mode .brand {
+    color: var(--text-color-dark);
 }
 
 body.dark-mode .tagline {
-    color: #b0b0b0; /* Lighter color for dark mode tagline */
+    color: var(--text-secondary-dark);
 }
 
-body.dark-mode .nav,
-body.dark-mode .text-nav {
-    background: rgba(30, 30, 30, 0.9); /* Consistent opacity */
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-}
-
-body.dark-mode .placement-controls {
-    background: rgba(30, 30, 30, 0.9);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+body.dark-mode .canvas-container {
+    border-color: var(--border-color-dark);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 body.dark-mode canvas {
-    background-color: #1e1e1e; /* Darker canvas background */
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4); /* Stronger shadow in dark mode */
+    background-color: var(--canvas-bg-dark);
+}
+
+body.dark-mode .nav,
+body.dark-mode .text-nav,
+body.dark-mode .placement-controls {
+    background: var(--ui-bg-dark);
+    border-color: rgba(255,255,255,0.1);
+}
+
+body.dark-mode button {
+    color: var(--text-color-dark);
+}
+
+body.dark-mode button:hover {
+    background: var(--hover-bg-dark);
+}
+
+body.dark-mode .text-style-btn.active {
+    background: var(--accent-color);
+    color: white; /* Remains white */
 }
 
 body.dark-mode output {
-    color: #e5e5ea;
-}
-
-body.dark-mode .text-nav select,
-body.dark-mode .text-nav input[type="number"],
-body.dark-mode .text-nav input[type="color"] {
-    background: #3a3a3c;
-    color: #e5e5ea;
-    border: 1px solid #48484a;
+    color: var(--text-color-dark);
 }
 
 body.dark-mode select {
+body.dark-mode .text-nav input[type="number"] {
+    background: var(--hover-bg-dark);
+    border-color: var(--border-color-dark);
+    color: var(--text-color-dark);
+}
+
+body.dark-mode select {
+     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23EAEAEA' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+}
+
+body.dark-mode select option {
+    background: var(--canvas-bg-dark);
+    color: var(--text-color-dark);
+}
+
+body.dark-mode .text-input-overlay {
+    border-color: var(--border-color-dark);
+}
+
+body.dark-mode input[type="color"]::-webkit-color-swatch {
+    border-color: var(--border-color-dark);
+}
+
+body.dark-mode footer {
+    color: #636366;
+}
+
+body.dark-mode .brand {
+    color: var(--text-color-dark);
+}
+
+/* --- Custom Tooltip Styles --- */
+[data-tooltip] {
+    position: relative;
+}
+
+[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px); /* Position above the element with a gap */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #343a40;
+    color: #f8f9fa;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 1002; /* Above other UI */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+[data-tooltip]:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+body.dark-mode [data-tooltip]::after {
+    background: #e9ecef;
+    color: #212529;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    body {
+        /* Allow vertical scroll if something unexpected happens, but main goal is to fit everything */
+        overflow-y: auto; 
+        overflow-x: hidden; /* Prevent horizontal scroll on body */
+        padding-top: 70px; /* Reduced space for header */
+        padding-bottom: 75px; /* Space for main nav bar */
+    }
+
+    /* --- Header --- */
+    .header-branding {
+        top: 10px;
+    }
+    .brand {
+        font-size: 1.5rem;
+    }
+    .tagline {
+        font-size: 0.8rem;
+    }
+
+    /* --- Canvas --- */
+    .canvas-container {
+        max-width: calc(100vw - 20px);
+        /* Recalculate max-height based on new body padding */
+        max-height: calc(100vh - 145px); /* 70px top + 75px bottom */
+        border-radius: 10px;
+    }
+    canvas {
+        border-radius: 10px;
+    }
+
+    /* --- Main Controls Bar --- */
+    .nav {
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        transform: none;
+        border-radius: 0; /* Flat bottom bar */
+        padding: 10px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start; /* Align items to the start for scrolling */
+        gap: 12px;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    /* Hide scrollbar for a cleaner look */
+    .nav::-webkit-scrollbar { 
+        display: none;
+    }
+
+    /* --- Secondary Control Bars (Text, Image Placement) --- */
+    .text-nav, .placement-controls {
+        width: auto; /* Size to content */
+        max-width: 95%;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 85px; /* Position above the main nav bar */
+        top: auto; /* Override desktop 'top' */
+        border-radius: 50px; /* Match desktop style */
+    }
+    
+    .text-nav {
+        overflow-x: auto; /* Allow scrolling if text tools don't fit */
+        flex-wrap: nowrap;
+    }
+    .text-nav::-webkit-scrollbar { display: none; }
+
+    /* --- General Control Elements --- */
+    .clr, button, select, input {
+        flex-shrink: 0; /* Prevent all controls from shrinking in the scrollable nav */
+    }
+    input[type="range"] {
+        min-width: 100px; /* Ensure slider is usable */
+    }
+
+    /* Hide footer on mobile to save space */
+    footer {
+        display: none;
+    }
+}
     background: #3a3a3c;
     color: #e5e5ea;
 }
@@ -399,4 +552,87 @@ body.dark-mode [data-tooltip]::after {
     background: #f0f0f0;
     color: #1c1c1e;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+/* --- Mobile Responsiveness --- */
+@media (max-width: 768px) {
+    body {
+        /* Allow vertical scroll if something unexpected happens, but main goal is to fit everything */
+        overflow-y: auto; 
+        overflow-x: hidden; /* Prevent horizontal scroll on body */
+        padding-top: 70px; /* Reduced space for header */
+        padding-bottom: 75px; /* Space for main nav bar */
+    }
+
+    /* --- Header --- */
+    .header-branding {
+        top: 10px;
+    }
+    .brand {
+        font-size: 1.5rem;
+    }
+    .tagline {
+        font-size: 0.8rem;
+    }
+
+    /* --- Canvas --- */
+    .canvas-container {
+        max-width: calc(100vw - 20px);
+        /* Recalculate max-height based on new body padding */
+        max-height: calc(100vh - 145px); /* 70px top + 75px bottom */
+        border-radius: 10px;
+    }
+    canvas {
+        border-radius: 10px;
+    }
+
+    /* --- Main Controls Bar --- */
+    .nav {
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        transform: none;
+        border-radius: 0; /* Flat bottom bar */
+        padding: 10px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start; /* Align items to the start for scrolling */
+        gap: 12px;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    }
+    /* Hide scrollbar for a cleaner look */
+    .nav::-webkit-scrollbar { 
+        display: none;
+    }
+
+    /* --- Secondary Control Bars (Text, Image Placement) --- */
+    .text-nav, .placement-controls {
+        width: auto; /* Size to content */
+        max-width: 95%;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: 85px; /* Position above the main nav bar */
+        top: auto; /* Override desktop 'top' */
+        border-radius: 50px; /* Match desktop style */
+    }
+    
+    .text-nav {
+        overflow-x: auto; /* Allow scrolling if text tools don't fit */
+        flex-wrap: nowrap;
+    }
+    .text-nav::-webkit-scrollbar { display: none; }
+
+    /* --- General Control Elements --- */
+    .clr, button, select, input {
+        flex-shrink: 0; /* Prevent all controls from shrinking in the scrollable nav */
+    }
+    input[type="range"] {
+        min-width: 100px; /* Ensure slider is usable */
+    }
+
+    /* Hide footer on mobile to save space */
+    footer {
+        display: none;
+    }
 }
