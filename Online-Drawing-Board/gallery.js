@@ -40,7 +40,7 @@ themeToggle.addEventListener('click', () => {
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
         return;
     }
     

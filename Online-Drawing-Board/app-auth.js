@@ -21,8 +21,11 @@ let currentUser = null;
 // Protect route: Immediately boot user if they shouldn't be here
 onAuthStateChanged(auth, (user) => {
     if (!user) {
-        window.location.href = "login.html";
+        window.location.replace("login.html");
     } else {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) loadingOverlay.classList.add('hidden');
+        
         currentUser = user; // Store user so we can save their drawings under their ID
         // Populate user profile info
         const profileContainer = document.getElementById('user-profile');
