@@ -17,12 +17,26 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const galleryContainer = document.getElementById('gallery-container');
-const loadingText = document.getElementById('loading-text');
+const loadingOverlay = document.getElementById('loading-overlay');
 
 // Modal elements
 const modal = document.getElementById('image-modal');
 const modalImg = document.getElementById('modal-img');
 const modalClose = document.getElementById('modal-close');
+
+// --- Theme Toggle Logic ---
+const themeToggle = document.getElementById('theme-toggle');
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
+}
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeToggle.textContent = isDark ? '☀️' : '🌙';
+});
+// --------------------------
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -37,7 +51,7 @@ onAuthStateChanged(auth, async (user) => {
         );
         
         const querySnapshot = await getDocs(q);
-        loadingText.style.display = 'none';
+        loadingOverlay.classList.add('hidden');
 
         if (querySnapshot.empty) {
             galleryContainer.innerHTML = `<div class="empty-gallery">No drawings saved yet. Go make some art! 🎨</div>`;
@@ -59,10 +73,12 @@ onAuthStateChanged(auth, async (user) => {
 
             card.innerHTML = `
                 <img src="${drawing.imageData}" alt="Saved Drawing" class="gallery-img-preview" title="Click to view full screen">
-                <div class="date-text">Saved: ${date}</div>
-                <div class="gallery-action-btns">
-                    <button class="download-drawing-btn" data-url="${drawing.imageData}">⬇️ Download</button>
-                    <button class="delete-drawing-btn" data-id="${drawing.id}">🗑️ Delete</button>
+                <div class="gallery-item-content">
+                    <div class="date-text">Saved: ${date}</div>
+                    <div class="gallery-action-btns">
+                        <button class="download-drawing-btn" data-url="${drawing.imageData}">⬇️ Download</button>
+                        <button class="delete-drawing-btn" data-id="${drawing.id}">🗑️ Delete</button>
+                    </div>
                 </div>
             `;
             galleryContainer.appendChild(card);
@@ -100,7 +116,8 @@ onAuthStateChanged(auth, async (user) => {
             });
         });
     } catch (error) {
-        loadingText.textContent = "Error loading drawings. Please check your connection.";
+        loadingOverlay.classList.add('hidden');
+        galleryContainer.innerHTML = `<div class="empty-gallery">Error loading drawings. Please check your connection.</div>`;
     }
 });
 

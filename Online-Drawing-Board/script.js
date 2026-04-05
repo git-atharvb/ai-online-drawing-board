@@ -119,6 +119,13 @@ toolSelect.addEventListener("change", (e) => {
 let themeToggle = document.querySelector(".theme-toggle");
 let isDarkMode = false;
 
+// Load theme on startup
+if (localStorage.getItem('theme') === 'dark') {
+    body.classList.add("dark-mode");
+    themeToggle.textContent = "☀️";
+    isDarkMode = true;
+}
+
 themeToggle.addEventListener("click", () => {
     isDarkMode = !isDarkMode;
     if (isDarkMode) {
@@ -128,6 +135,7 @@ themeToggle.addEventListener("click", () => {
         body.classList.remove("dark-mode");
         themeToggle.textContent = "🌙"; // Change to moon icon
     }
+    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
 });
 
 // Helper function to get the current background color for saving

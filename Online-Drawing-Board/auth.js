@@ -26,6 +26,24 @@ const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
 const loginError = document.getElementById('login-error');
 const signupError = document.getElementById('signup-error');
+const loadingOverlay = document.getElementById('loading-overlay');
+
+const showLoading = () => loadingOverlay.classList.remove('hidden');
+const hideLoading = () => loadingOverlay.classList.add('hidden');
+
+// --- Theme Toggle Logic ---
+const themeToggle = document.getElementById('theme-toggle');
+if (localStorage.getItem('theme') === 'dark') {
+    document.body.classList.add('dark-mode');
+    themeToggle.textContent = '☀️';
+}
+themeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeToggle.textContent = isDark ? '☀️' : '🌙';
+});
+// --------------------------
 
 goToSignup.addEventListener('click', () => {
     loginBox.classList.add('hidden');
@@ -46,9 +64,12 @@ signupForm.addEventListener('submit', (e) => {
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
 
+    showLoading();
+
     createUserWithEmailAndPassword(auth, email, password)
         .then(() => window.location.href = "index.html")
         .catch((error) => {
+            hideLoading();
             signupError.textContent = error.message.replace("Firebase: ", "");
         });
 });
@@ -58,9 +79,12 @@ loginForm.addEventListener('submit', (e) => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
 
+    showLoading();
+
     signInWithEmailAndPassword(auth, email, password)
         .then(() => window.location.href = "index.html")
         .catch((error) => {
+            hideLoading();
             loginError.textContent = error.message.replace("Firebase: ", "");
         });
 });
@@ -68,9 +92,11 @@ loginForm.addEventListener('submit', (e) => {
 const googleBtns = document.querySelectorAll('.google-btn');
 googleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+        showLoading();
         signInWithPopup(auth, googleProvider)
             .then(() => window.location.href = "index.html")
             .catch((error) => {
+                hideLoading();
                 loginError.textContent = error.message.replace("Firebase: ", "");
             });
     });

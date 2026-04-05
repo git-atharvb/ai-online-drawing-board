@@ -6,10 +6,22 @@
     <title>My Gallery - Atharv's Drawing Board</title>
     <link rel="stylesheet" href="style.css">
     <script type="module" src="gallery.js" defer></script>
+    <link rel="icon" href="logo.png" type="image/png">
 </head>
 <body>
-    <div class="header-branding" style="position: relative; top: 20px; margin-bottom: 40px;">
-        <div class="brand">My Cloud Gallery ☁️</div>
+    <button id="theme-toggle" class="gallery-theme-toggle" title="Toggle Theme">🌙</button>
+
+    <!-- Loading Spinner Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Loading your masterpieces...</p>
+    </div>
+
+    <div class="header-branding">
+        <div class="brand">
+            <img src="logo.png" alt="Logo" class="header-logo">
+            My Cloud Gallery ☁️
+        </div>
         <div class="tagline">View and manage your saved artworks</div>
     </div>
     
@@ -18,7 +30,6 @@
     </div>
 
     <div class="gallery-container" id="gallery-container">
-        <div class="loading-text" id="loading-text">Loading your masterpieces...</div>
     </div>
 
     <!-- Full Screen Image Modal -->
@@ -26,5 +37,9 @@
         <span class="modal-close" id="modal-close">&times;</span>
         <img class="modal-content" id="modal-img">
     </div>
+
+    <footer>
+        &copy; Programmed & Managed by Atharv Bowlekar - Sept 2025
+    </footer>
 </body>
 </html>
