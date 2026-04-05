@@ -41,8 +41,13 @@ onAuthStateChanged(auth, (user) => {
 // Setup Logout button
 const logoutBtn = document.getElementById('logout-btn');
 if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-        signOut(auth);
+    logoutBtn.addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+        } catch (error) {
+            console.error("Error signing out:", error);
+            alert("Failed to sign out. Please check your network connection and try again.");
+        }
     });
 }
 

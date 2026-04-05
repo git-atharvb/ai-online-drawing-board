@@ -106,12 +106,19 @@ onAuthStateChanged(auth, async (user) => {
         // Attach event listeners to delete buttons
         document.querySelectorAll('.delete-drawing-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                const docId = e.target.getAttribute('data-id');
-                if (confirm("Are you sure you want to permanently delete this drawing?")) {
-                    e.target.textContent = 'Deleting...';
-                    e.target.disabled = true;
-                    await deleteDoc(doc(db, "drawings", docId));
-                    e.target.closest('.gallery-item').remove();
+                try {
+                    const docId = e.target.getAttribute('data-id');
+                    if (confirm("Are you sure you want to permanently delete this drawing?")) {
+                        e.target.textContent = 'Deleting...';
+                        e.target.disabled = true;
+                        await deleteDoc(doc(db, "drawings", docId));
+                        e.target.closest('.gallery-item').remove();
+                    }
+                } catch (error) {
+                    console.error("Error deleting document:", error);
+                    alert("Failed to delete drawing. Please try again.");
+                    e.target.textContent = '🗑️ Delete';
+                    e.target.disabled = false;
                 }
             });
         });

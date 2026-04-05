@@ -281,15 +281,21 @@ saveBtn.addEventListener("click", () => {
     tempCtx.fillStyle = getBackgroundColor();
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
 
-    // Draw the current canvas content on top of the background
-    tempCtx.drawImage(canvas, 0, 0);
-
-    // Trigger download from the temporary canvas
-    let data = tempCanvas.toDataURL("image/png");
-    let a = document.createElement("a");
-    a.href = data;
-    a.download = "sketch.png";
-    a.click();
+    try {
+        // Draw the current canvas content on top of the background
+        tempCtx.drawImage(canvas, 0, 0);
+    
+        // Trigger download from the temporary canvas
+        let data = tempCanvas.toDataURL("image/png");
+        let a = document.createElement("a");
+        a.href = data;
+        a.download = "sketch.png";
+        a.click();
+        showToast("Image saved successfully!", "success");
+    } catch (e) {
+        console.error("Error saving image:", e);
+        showToast("Failed to save image. The canvas might contain cross-origin data.", "error");
+    }
 });
 
 let savePdfBtn = document.querySelector(".save-pdf")
@@ -307,39 +313,52 @@ savePdfBtn.addEventListener("click", () => {
     tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
     tempCtx.drawImage(canvas, 0, 0);
 
-    // Get image data from the temporary canvas
-    let imgData = tempCanvas.toDataURL("image/png", 1.0);
-
-    const worker = new Worker('pdfWorker.js');
+    try {
+        // Get image data from the temporary canvas
+        let imgData = tempCanvas.toDataURL("image/png", 1.0);
     
-    worker.postMessage({
-        imgData: imgData,
-        width: canvas.width,
-        height: canvas.height
-    });
-    
-    worker.onmessage = function(e) {
-        const { pdfBlob } = e.data;
-        const blobUrl = URL.createObjectURL(pdfBlob);
+        const worker = new Worker('pdfWorker.js');
         
-        let a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = "sketch.pdf";
-        a.click();
+        worker.postMessage({
+            imgData: imgData,
+            width: canvas.width,
+            height: canvas.height
+        });
         
-        URL.revokeObjectURL(blobUrl);
-        worker.terminate();
+        worker.onmessage = function(e) {
+            if (e.data.error) {
+                console.error('PDF Worker Error:', e.data.error);
+                showToast("Failed to generate PDF: " + e.data.error, "error");
+            } else {
+                const { pdfBlob } = e.data;
+                const blobUrl = URL.createObjectURL(pdfBlob);
+                
+                let a = document.createElement("a");
+                a.href = blobUrl;
+                a.download = "sketch.pdf";
+                a.click();
+                
+                URL.revokeObjectURL(blobUrl);
+                showToast("PDF saved successfully!", "success");
+            }
+            worker.terminate();
+            savePdfBtn.textContent = originalText;
+            savePdfBtn.disabled = false;
+        };
+        
+        worker.onerror = function(err) {
+            console.error('PDF Worker Error:', err);
+            showToast("Failed to initialize PDF Generator.", "error");
+            worker.terminate();
+            savePdfBtn.textContent = originalText;
+            savePdfBtn.disabled = false;
+        };
+    } catch (e) {
+        console.error("Error preparing PDF data:", e);
+        showToast("Failed to process canvas. Cross-origin data might be present.", "error");
         savePdfBtn.textContent = originalText;
         savePdfBtn.disabled = false;
-    };
-    
-    worker.onerror = function(err) {
-        console.error('PDF Worker Error:', err);
-        alert("Failed to generate PDF");
-        worker.terminate();
-        savePdfBtn.textContent = originalText;
-        savePdfBtn.disabled = false;
-    };
+    }
 });
 
 let undoBtn = document.querySelector(".undo")
@@ -368,6 +387,10 @@ uploadInput.addEventListener("change", (e) => {
     let reader = new FileReader();
     reader.onload = function(event) {
         startImagePlacement(event.target.result);
+    }
+    reader.onerror = function() {
+        console.error("Error reading uploaded file.");
+        showToast("Failed to read the uploaded image.", "error");
     }
     reader.readAsDataURL(file);
     e.target.value = ''; // Reset input so same file can be re-uploaded
@@ -656,6 +679,11 @@ function startImagePlacement(imgSrc) {
 
     // 2. Load the image into Fabric
     fabric.Image.fromURL(imgSrc, function(img) {
+        if (!img) {
+            showToast("Failed to load image into canvas.", "error");
+            endImagePlacement();
+            return;
+        }
         const scale = Math.min((canvas.width * 0.75) / img.width, (canvas.height * 0.75) / img.height);
         
         img.set({
@@ -874,6 +902,7 @@ function showToast(message, type = 'success') {
     let icon = '✨';
     if (type === 'success') icon = '🎉';
     if (type === 'info') icon = '👋';
+    if (type === 'error') icon = '⚠️';
     
     toast.innerHTML = `<span class="toast-icon">${icon}</span> <span>${message}</span>`;
     container.appendChild(toast);
