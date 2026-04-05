@@ -4,7 +4,17 @@ var theColor = '';
 var lineW = 5;
 let prevX = null
 let prevY = null
+let points = []
 let draw = false
+
+// Layer & Brush State Variables
+let mainCtx = null;
+let layers = [];
+let activeLayerIndex = 0;
+let brushOpacity = 1.0;
+let brushBlur = 0;
+let isCalligraphy = false;
+let isEraser = false;
 
 let currentTool = "freehand";
 let snapshot;
@@ -21,20 +31,7 @@ let tUnderline = false;
 let currentTextInput = null;
 
 // Image Placement variables
-let imagePlacement = {
-    active: false,
-    img: null,
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    isDragging: false,
-    isResizing: false,
-    dragStartX: 0,
-    dragStartY: 0,
-    handleSize: 12, // Larger for easier touch
-    activeHandle: null
-};
+let fabricOverlay = null;
 const overlayCanvas = document.getElementById('overlay-canvas');
 const overlayCtx = overlayCanvas.getContext('2d');
 const placementControls = document.getElementById('placement-controls');
@@ -44,34 +41,82 @@ var theInput = document.getElementById("favcolor");
 
 theInput.addEventListener("input", function(){
   theColor = theInput.value;
-  ctx.globalCompositeOperation = "source-over";
-  ctx.strokeStyle = theColor;
+  isEraser = false;
 }, false);
 
-const ctx = canvas.getContext("2d")
-ctx.lineWidth = lineW;
-ctx.lineCap = "round";
-ctx.lineJoin = "round";
+mainCtx = canvas.getContext("2d");
+let ctx = mainCtx; // Fallback, will be replaced by layer context
+
+function renderAllLayers() {
+    mainCtx.clearRect(0, 0, canvas.width, canvas.height);
+    layers.forEach(layer => {
+        if (layer.visible) {
+            mainCtx.drawImage(layer.canvas, 0, 0);
+        }
+    });
+}
+
+function applyContextStyles(context) {
+    context.lineWidth = lineW;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.strokeStyle = theColor || "#000000";
+    
+    if (isEraser) {
+        context.globalCompositeOperation = "destination-out";
+        context.globalAlpha = 1.0;
+        context.shadowBlur = 0;
+    } else {
+        context.globalCompositeOperation = "source-over";
+        context.globalAlpha = brushOpacity;
+        context.shadowBlur = brushBlur;
+        context.shadowColor = brushBlur > 0 ? context.strokeStyle : "transparent";
+    }
+}
 
 function saveState() {
     // If we undo and then draw, remove the "future" redo states
     if (historyIndex < history.length - 1) {
         history = history.slice(0, historyIndex + 1);
     }
-    history.push(canvas.toDataURL("image/png"));
+    
+    // Save the state of all layers
+    const state = layers.map(l => ({
+        name: l.name,
+        visible: l.visible,
+        data: l.canvas.toDataURL("image/png")
+    }));
+    
+    history.push(state);
     historyIndex++;
 }
 
 function restoreState(index) {
-    let img = new Image();
-    img.onload = () => {
-        let prevComposite = ctx.globalCompositeOperation;
-        ctx.globalCompositeOperation = "source-over"; // Ensure image renders normally regardless of eraser selection
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0);
-        ctx.globalCompositeOperation = prevComposite;
-    };
-    img.src = history[index];
+    const state = history[index];
+    if (!state || state.length === 0) return;
+    
+    layers = [];
+    let loadedCount = 0;
+    
+    state.forEach((lState) => {
+        const layer = createLayer(lState.name);
+        layer.visible = lState.visible;
+        
+        let img = new Image();
+        img.onload = () => {
+            layer.ctx.globalCompositeOperation = "source-over";
+            layer.ctx.clearRect(0, 0, layer.canvas.width, layer.canvas.height);
+            layer.ctx.drawImage(img, 0, 0);
+            loadedCount++;
+            if (loadedCount === state.length) {
+                if (activeLayerIndex >= layers.length) activeLayerIndex = layers.length - 1;
+                ctx = layers[activeLayerIndex].ctx;
+                renderAllLayers();
+                updateLayerUI();
+            }
+        };
+        img.src = lState.data;
+    });
 }
 
 // Function to set canvas dimensions based on its computed style
@@ -89,8 +134,21 @@ function setCanvasDisplaySize() {
     overlayCanvas.width = displayWidth;
     overlayCanvas.height = displayHeight;
 
+    // Resize all layers while retaining their content
+    layers.forEach(layer => {
+        const temp = layer.canvas.toDataURL();
+        layer.canvas.width = displayWidth;
+        layer.canvas.height = displayHeight;
+        let img = new Image();
+        img.onload = () => {
+            layer.ctx.drawImage(img, 0, 0);
+            renderAllLayers();
+        }
+        img.src = temp;
+    });
+
     // Restore the current state after resizing to prevent clearing the drawing
-    if (historyIndex !== -1) {
+    if (historyIndex !== -1 && layers.length === 0) {
         restoreState(historyIndex);
     }
 }
@@ -194,19 +252,20 @@ let clrs = document.querySelectorAll(".clr")
 clrs = Array.from(clrs)
 clrs.forEach(clr => {
     clr.addEventListener("click", () => {
-        ctx.globalCompositeOperation = "source-over";
-        ctx.strokeStyle = clr.dataset.clr
+        isEraser = false;
+        theColor = clr.dataset.clr;
     })
 })
 
 let eraserBtn = document.querySelector(".eraser")
 eraserBtn.addEventListener("click", () => {
-    ctx.globalCompositeOperation = "destination-out";
+    isEraser = true;
 })
 
 let clearBtn = document.querySelector(".clear")
 clearBtn.addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+    renderAllLayers();
     saveState();
 })
 
@@ -235,7 +294,9 @@ saveBtn.addEventListener("click", () => {
 
 let savePdfBtn = document.querySelector(".save-pdf")
 savePdfBtn.addEventListener("click", () => {
-    const { jsPDF } = window.jspdf;
+    const originalText = savePdfBtn.textContent;
+    savePdfBtn.textContent = '⏳';
+    savePdfBtn.disabled = true;
 
     // Create a temporary canvas with background for the PDF
     const tempCanvas = document.createElement('canvas');
@@ -249,11 +310,36 @@ savePdfBtn.addEventListener("click", () => {
     // Get image data from the temporary canvas
     let imgData = tempCanvas.toDataURL("image/png", 1.0);
 
-    let orientation = canvas.width >= canvas.height ? 'landscape' : 'portrait';
-    let pdf = new jsPDF({ orientation: orientation, unit: 'px', format: [canvas.width, canvas.height] });
-
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save("sketch.pdf");
+    const worker = new Worker('pdfWorker.js');
+    
+    worker.postMessage({
+        imgData: imgData,
+        width: canvas.width,
+        height: canvas.height
+    });
+    
+    worker.onmessage = function(e) {
+        const { pdfBlob } = e.data;
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        
+        let a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = "sketch.pdf";
+        a.click();
+        
+        URL.revokeObjectURL(blobUrl);
+        worker.terminate();
+        savePdfBtn.textContent = originalText;
+        savePdfBtn.disabled = false;
+    };
+    
+    worker.onerror = function(err) {
+        console.error('PDF Worker Error:', err);
+        alert("Failed to generate PDF");
+        worker.terminate();
+        savePdfBtn.textContent = originalText;
+        savePdfBtn.disabled = false;
+    };
 });
 
 let undoBtn = document.querySelector(".undo")
@@ -281,12 +367,7 @@ uploadInput.addEventListener("change", (e) => {
     if (!file) return;
     let reader = new FileReader();
     reader.onload = function(event) {
-        let img = new Image();
-        img.onload = function() {
-            // Instead of drawing directly, start placement mode
-            startImagePlacement(img);
-        }
-        img.src = event.target.result;
+        startImagePlacement(event.target.result);
     }
     reader.readAsDataURL(file);
     e.target.value = ''; // Reset input so same file can be re-uploaded
@@ -301,9 +382,11 @@ function getPos(e) {
 }
 
 const startDraw = (e) => {
-    if (textInputActive || imagePlacement.active) return; // Prevent drawing if typing text or placing image
+    if (textInputActive || fabricOverlay) return; // Prevent drawing if typing text or placing image
     
     let pos = getPos(e);
+    
+    applyContextStyles(ctx); // Ensure active context has correct colors and brush settings
     
     if (currentTool === "text") {
         addTextInput(pos.x, pos.y);
@@ -317,6 +400,7 @@ const startDraw = (e) => {
     draw = true;
     prevX = pos.x;
     prevY = pos.y;
+    points = [pos];
     
     // Save snapshot of canvas before drawing the shape
     snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -337,20 +421,44 @@ const stopDraw = () => {
 };
 
 const drawing = (e) => {
-    if (!draw || currentTool === "text" || currentTool === "fill" || imagePlacement.active) return;
+    if (!draw || currentTool === "text" || currentTool === "fill" || fabricOverlay) return;
     let pos = getPos(e);
     let currentX = pos.x;
     let currentY = pos.y;
 
-    if (currentTool !== "freehand") {
-        // Restore the snapshot to "erase" the previous frame of the shape being dragged
-        ctx.putImageData(snapshot, 0, 0);
-    }
+    // Restore the snapshot to "erase" the previous frame of the shape being dragged,
+    // and also to redraw the dynamically smoothed bezier path for freehand
+    ctx.putImageData(snapshot, 0, 0);
 
     ctx.beginPath();
     if (currentTool === "freehand") {
-        ctx.moveTo(prevX, prevY);
-        ctx.lineTo(currentX, currentY);
+        points.push(pos);
+        ctx.moveTo(points[0].x, points[0].y);
+        
+        for (let i = 1; i < points.length - 1; i++) {
+            let midX = (points[i].x + points[i + 1].x) / 2;
+            let midY = (points[i].y + points[i + 1].y) / 2;
+            ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+        }
+        if (points.length > 1) {
+            let lastPoint = points[points.length - 1];
+            ctx.lineTo(lastPoint.x, lastPoint.y);
+        }
+        
+        // Add Calligraphy offset stroke
+        if (isCalligraphy) {
+            ctx.moveTo(points[0].x + lineW/2, points[0].y + lineW/2);
+            for (let i = 1; i < points.length - 1; i++) {
+                let midX = (points[i].x + points[i + 1].x) / 2;
+                let midY = (points[i].y + points[i + 1].y) / 2;
+                ctx.quadraticCurveTo(points[i].x + lineW/2, points[i].y + lineW/2, midX + lineW/2, midY + lineW/2);
+            }
+            if (points.length > 1) {
+                let lastPoint = points[points.length - 1];
+                ctx.lineTo(lastPoint.x + lineW/2, lastPoint.y + lineW/2);
+            }
+        }
+        
         ctx.stroke();
         prevX = currentX;
         prevY = currentY;
@@ -375,6 +483,8 @@ const drawing = (e) => {
         drawStar(ctx, prevX, prevY, 5, radius, radius / 2);
         ctx.stroke();
     }
+    
+    renderAllLayers(); // Composite updates sequentially
 };
 
 canvas.addEventListener("mousedown", startDraw);
@@ -385,15 +495,116 @@ canvas.addEventListener("touchstart", (e) => { e.preventDefault(); startDraw(e);
 canvas.addEventListener("touchmove", (e) => { e.preventDefault(); drawing(e); }, { passive: false });
 window.addEventListener("touchend", stopDraw);
 
+let resizeTimeout;
 window.addEventListener("resize", () => {
-    setCanvasDisplaySize(); // Update canvas dimensions
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.lineWidth = lineW;
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        setCanvasDisplaySize(); // Update canvas dimensions
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.lineWidth = lineW;
+    }, 150); // 150ms debounce for smoother resizing
 });
+
+// --- Layer & Brush UI Injection ---
+function createLayer(name) {
+    const lCanvas = document.createElement('canvas');
+    lCanvas.width = canvas.width || 800; 
+    lCanvas.height = canvas.height || 600;
+    const layer = { id: Date.now(), name: name, canvas: lCanvas, ctx: lCanvas.getContext('2d'), visible: true };
+    layers.push(layer);
+    return layer;
+}
+
+function initAdvancedUI() {
+    const advancedPanel = document.createElement('div');
+    advancedPanel.className = 'advanced-panel collapsed-mobile';
+    advancedPanel.innerHTML = `
+        <div class="advanced-panel-toggle" title="Toggle Layers & Brushes">⚙️ Layers & Brushes</div>
+        <div class="advanced-panel-content">
+            <div class="brush-controls">
+                <h4>Brush Options</h4>
+                <label>Opacity: <input type="range" id="brush-opacity" min="0.1" max="1" step="0.1" value="1"></label>
+                <label>Spray Blur: <input type="range" id="brush-blur" min="0" max="20" step="1" value="0"></label>
+                <label><input type="checkbox" id="brush-calligraphy"> Calligraphy Pen</label>
+            </div>
+            <div class="layer-controls" style="margin-top: 15px;">
+                <h4 style="display:flex; justify-content:space-between; align-items:center; margin:0 0 10px 0;">Layers <button id="add-layer-btn" style="cursor:pointer; padding:2px 8px; border-radius:4px; border:none; background:#007aff; color:white;">+</button></h4>
+                <ul id="layer-list" style="list-style:none; padding:0; margin:0; max-height:150px; overflow-y:auto;"></ul>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(advancedPanel);
+
+    document.getElementById('brush-opacity').addEventListener('input', (e) => brushOpacity = parseFloat(e.target.value));
+    document.getElementById('brush-blur').addEventListener('input', (e) => brushBlur = parseInt(e.target.value));
+    document.getElementById('brush-calligraphy').addEventListener('change', (e) => isCalligraphy = e.target.checked);
+    
+    document.querySelector('.advanced-panel-toggle').addEventListener('click', () => {
+        advancedPanel.classList.toggle('collapsed-mobile');
+    });
+    
+    document.getElementById('add-layer-btn').addEventListener('click', () => {
+        createLayer('Layer ' + (layers.length + 1));
+        activeLayerIndex = layers.length - 1;
+        ctx = layers[activeLayerIndex].ctx;
+        updateLayerUI();
+    });
+}
+
+function updateLayerUI() {
+    const list = document.getElementById('layer-list');
+    if (!list) return;
+    list.innerHTML = '';
+    [...layers].reverse().forEach((layer, reversedIndex) => {
+        const realIndex = layers.length - 1 - reversedIndex;
+        const li = document.createElement('li');
+        li.className = 'layer-item' + (realIndex === activeLayerIndex ? ' active' : '');
+        li.innerHTML = `
+            <span class="layer-name">${layer.name}</span>
+            <div class="layer-actions">
+                <button class="toggle-vis" data-idx="${realIndex}" title="Toggle Visibility">${layer.visible ? '👁️' : '🔒'}</button>
+                <button class="delete-layer" data-idx="${realIndex}" title="Delete Layer">🗑️</button>
+            </div>
+        `;
+        li.onclick = (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                activeLayerIndex = realIndex;
+                ctx = layers[activeLayerIndex].ctx;
+                updateLayerUI();
+            }
+        };
+        list.appendChild(li);
+    });
+
+    document.querySelectorAll('.toggle-vis').forEach(btn => {
+        btn.onclick = (e) => {
+            const idx = parseInt(e.target.getAttribute('data-idx'));
+            layers[idx].visible = !layers[idx].visible;
+            renderAllLayers();
+            updateLayerUI();
+        };
+    });
+    document.querySelectorAll('.delete-layer').forEach(btn => {
+        btn.onclick = (e) => {
+            if (layers.length === 1) return alert("Cannot delete the last layer.");
+            const idx = parseInt(e.target.getAttribute('data-idx'));
+            layers.splice(idx, 1);
+            if (activeLayerIndex >= layers.length) activeLayerIndex = layers.length - 1;
+            ctx = layers[activeLayerIndex].ctx;
+            renderAllLayers();
+            updateLayerUI();
+        };
+    });
+}
 
 // Initial setup for canvas size and state after the page has fully loaded
 window.onload = () => {
+    initAdvancedUI(); // Setup custom layers and controls Panel
+    createLayer('Background'); // Create the first core drawing layer
+    ctx = layers[0].ctx;
+    updateLayerUI();
+    
     setCanvasDisplaySize();
     saveState(); // Save the blank canvas state at launch
 
@@ -408,176 +619,74 @@ window.onload = () => {
 };
 
 confirmPlacementBtn.addEventListener('click', () => {
-    // Stamp the image onto the main canvas
-    ctx.drawImage(imagePlacement.img, imagePlacement.x, imagePlacement.y, imagePlacement.width, imagePlacement.height);
-    saveState();
-    endImagePlacement();
+    if (fabricOverlay) {
+        // Deselect to hide the bounding box and rotation controls before stamping
+        fabricOverlay.discardActiveObject();
+        fabricOverlay.renderAll();
+        
+        // Stamp the Fabric canvas directly onto our active layer context
+        ctx.drawImage(fabricOverlay.getElement(), 0, 0);
+        renderAllLayers();
+        saveState();
+        endImagePlacement();
+    }
 });
 
 cancelPlacementBtn.addEventListener('click', () => {
     endImagePlacement();
 });
 
-function startImagePlacement(img) {
-    imagePlacement.active = true;
-    imagePlacement.img = img;
-
-    // Calculate initial size and position to be centered and not too large
-    const scale = Math.min((canvas.width * 0.75) / img.width, (canvas.height * 0.75) / img.height);
-    imagePlacement.width = img.width * scale;
-    imagePlacement.height = img.height * scale;
-    imagePlacement.x = (canvas.width - imagePlacement.width) / 2;
-    imagePlacement.y = (canvas.height - imagePlacement.height) / 2;
-
+function startImagePlacement(imgSrc) {
     placementControls.style.display = 'flex';
-    overlayCanvas.style.pointerEvents = 'auto';
-    overlayCanvas.style.cursor = 'move';
+    
+    // 1. Initialize Fabric onto the overlay canvas
+    fabricOverlay = new fabric.Canvas('overlay-canvas', {
+        width: canvas.width,
+        height: canvas.height
+    });
+    
+    // Ensure the wrapper container catches mouse events
+    const container = document.querySelector('.canvas-container');
+    if (container) {
+        container.style.position = 'absolute';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.pointerEvents = 'auto';
+    }
 
-    // Add event listeners for the overlay
-    overlayCanvas.addEventListener('mousedown', handlePlacementMouseDown);
-    overlayCanvas.addEventListener('mousemove', handlePlacementMouseMove);
-    window.addEventListener('mouseup', handlePlacementMouseUp); // Use window to catch mouseup outside canvas
-
-    requestAnimationFrame(animatePlacement);
+    // 2. Load the image into Fabric
+    fabric.Image.fromURL(imgSrc, function(img) {
+        const scale = Math.min((canvas.width * 0.75) / img.width, (canvas.height * 0.75) / img.height);
+        
+        img.set({
+            scaleX: scale,
+            scaleY: scale,
+            left: canvas.width / 2,
+            top: canvas.height / 2,
+            originX: 'center',
+            originY: 'center',
+            borderColor: '#007aff',
+            cornerColor: '#fff',
+            cornerStrokeColor: '#007aff',
+            transparentCorners: false,
+            cornerSize: 12
+        });
+        
+        fabricOverlay.add(img);
+        fabricOverlay.setActiveObject(img);
+    });
 }
 
 function endImagePlacement() {
-    imagePlacement.active = false;
-    imagePlacement.img = null;
-    imagePlacement.isDragging = false;
-    imagePlacement.isResizing = false;
-
     placementControls.style.display = 'none';
-    overlayCanvas.style.pointerEvents = 'none';
-    overlayCanvas.style.cursor = 'default';
-    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-
-    // Remove event listeners to prevent them from firing when not in placement mode
-    overlayCanvas.removeEventListener('mousedown', handlePlacementMouseDown);
-    overlayCanvas.removeEventListener('mousemove', handlePlacementMouseMove);
-    window.removeEventListener('mouseup', handlePlacementMouseUp);
-}
-
-function animatePlacement() {
-    if (!imagePlacement.active) return;
-
-    overlayCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
-    overlayCtx.drawImage(imagePlacement.img, imagePlacement.x, imagePlacement.y, imagePlacement.width, imagePlacement.height);
-    drawHandles();
-
-    requestAnimationFrame(animatePlacement);
-}
-
-function getHandles() {
-    const { x, y, width, height, handleSize } = imagePlacement;
-    const halfHandle = handleSize / 2;
-    // Using only corner handles for proportional resizing
-    return {
-        'top-left': { x: x - halfHandle, y: y - halfHandle, width: handleSize, height: handleSize },
-        'top-right': { x: x + width - halfHandle, y: y - halfHandle, width: handleSize, height: handleSize },
-        'bottom-left': { x: x - halfHandle, y: y + height - halfHandle, width: handleSize, height: handleSize },
-        'bottom-right': { x: x + width - halfHandle, y: y + height - halfHandle, width: handleSize, height: handleSize }
-    };
-}
-
-function drawHandles() {
-    const { x, y, width, height } = imagePlacement;
-    overlayCtx.strokeStyle = '#007aff';
-    overlayCtx.lineWidth = 2;
-    overlayCtx.strokeRect(x, y, width, height);
-
-    overlayCtx.fillStyle = '#fff';
-    const handles = getHandles();
-    for (const handle in handles) {
-        overlayCtx.fillRect(handles[handle].x, handles[handle].y, handles[handle].width, handles[handle].height);
-        overlayCtx.strokeRect(handles[handle].x, handles[handle].y, handles[handle].width, handles[handle].height);
-    }
-}
-
-function getHandleAtPos(posX, posY) {
-    const handles = getHandles();
-    for (const handleName in handles) {
-        const handle = handles[handleName];
-        if (posX >= handle.x && posX <= handle.x + handle.width &&
-            posY >= handle.y && posY <= handle.y + handle.height) {
-            return handleName;
-        }
-    }
-    return null;
-}
-
-function handlePlacementMouseDown(e) {
-    const pos = getPos(e);
     
-    const handle = getHandleAtPos(pos.x, pos.y);
-    if (handle) {
-        imagePlacement.isResizing = true;
-        imagePlacement.activeHandle = handle;
-    } else if (pos.x >= imagePlacement.x && pos.x <= imagePlacement.x + imagePlacement.width &&
-               pos.y >= imagePlacement.y && pos.y <= imagePlacement.y + imagePlacement.height) {
-        imagePlacement.isDragging = true;
+    if (fabricOverlay) {
+        // Calling dispose() destroys the Fabric wrapper and restores the raw canvas element!
+        fabricOverlay.dispose();
+        fabricOverlay = null;
     }
-
-    imagePlacement.dragStartX = pos.x;
-    imagePlacement.dragStartY = pos.y;
-}
-
-function handlePlacementMouseMove(e) {
-    const pos = getPos(e);
-    const dx = pos.x - imagePlacement.dragStartX;
-    const dy = pos.y - imagePlacement.dragStartY;
-
-    if (imagePlacement.isDragging) {
-        imagePlacement.x += dx;
-        imagePlacement.y += dy;
-    } else if (imagePlacement.isResizing) {
-        const { width, height, activeHandle } = imagePlacement;
-        const aspectRatio = width / height;
-        let newWidth = width;
-
-        if (activeHandle.includes('right')) {
-            newWidth += dx;
-        } else if (activeHandle.includes('left')) {
-            newWidth -= dx;
-        }
-
-        let newHeight = newWidth / aspectRatio;
-
-        if (activeHandle.includes('left')) {
-            imagePlacement.x += width - newWidth;
-        }
-        if (activeHandle.includes('top')) {
-            imagePlacement.y += height - newHeight;
-        }
-        
-        imagePlacement.width = newWidth;
-        imagePlacement.height = newHeight;
-
-    } else {
-        // Update cursor based on hover position
-        const handle = getHandleAtPos(pos.x, pos.y);
-        if (handle) {
-            if (handle.includes('top-left') || handle.includes('bottom-right')) {
-                overlayCanvas.style.cursor = 'nwse-resize';
-            } else {
-                overlayCanvas.style.cursor = 'nesw-resize';
-            }
-        } else if (pos.x >= imagePlacement.x && pos.x <= imagePlacement.x + imagePlacement.width &&
-                   pos.y >= imagePlacement.y && pos.y <= imagePlacement.y + imagePlacement.height) {
-            overlayCanvas.style.cursor = 'move';
-        } else {
-            overlayCanvas.style.cursor = 'default';
-        }
-    }
-
-    imagePlacement.dragStartX = pos.x;
-    imagePlacement.dragStartY = pos.y;
-}
-
-function handlePlacementMouseUp(e) {
-    imagePlacement.isDragging = false;
-    imagePlacement.isResizing = false;
-    imagePlacement.activeHandle = null;
+    
+    overlayCanvas.style.pointerEvents = 'none';
 }
 
 function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
@@ -648,6 +757,7 @@ function addTextInput(x, y) {
             }
             
             ctx.fillStyle = prevFillStyle;
+            renderAllLayers();
             
             saveState();
         }
@@ -750,4 +860,72 @@ function floodFill(startX, startY, fillColorStr) {
         }
     }
     ctx.putImageData(imgData, 0, 0);
+    renderAllLayers();
 }
+
+// --- Toast Notification & Auth Messages ---
+function showToast(message, type = 'success') {
+    let container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    
+    let icon = '✨';
+    if (type === 'success') icon = '🎉';
+    if (type === 'info') icon = '👋';
+    
+    toast.innerHTML = `<span class="toast-icon">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3500);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const profileEmail = document.getElementById('profile-email');
+    let welcomeShown = sessionStorage.getItem('welcomeShown') === 'true';
+    
+    // 1. Welcome Message: Detect when the profile email is loaded by Firebase
+    if (profileEmail && !welcomeShown) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                const emailText = mutation.target.textContent;
+                if (emailText && !welcomeShown) {
+                    // Extract formatted name from email (e.g., "john.doe@gmail.com" -> "John Doe")
+                    const namePart = emailText.split('@')[0].replace(/[._]/g, ' ');
+                    const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+                    
+                    showToast(`Welcome back, ${formattedName}!`, 'success');
+                    sessionStorage.setItem('welcomeShown', 'true');
+                    welcomeShown = true;
+                    observer.disconnect();
+                }
+            });
+        });
+        observer.observe(profileEmail, { childList: true, characterData: true, subtree: true });
+    }
+
+    // 2. Thank You Message: Intercept the Logout button click to show message before redirect
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        let isLoggingOut = false;
+        logoutBtn.addEventListener('click', (e) => {
+            if (!isLoggingOut) {
+                e.preventDefault();
+                e.stopImmediatePropagation(); // Prevent app-auth.js from firing immediately
+                isLoggingOut = true;
+                
+                showToast('Thank you for creating with us! Logging out...', 'info');
+                
+                // Wait 1.5 seconds to let user read the toast, then trigger actual logout
+                setTimeout(() => {
+                    logoutBtn.click(); // Now isLoggingOut is true, so this propagates to app-auth.js
+                }, 1500);
+            }
+        }, true); // Use capture phase to ensure this runs BEFORE other click listeners
+    }
+});

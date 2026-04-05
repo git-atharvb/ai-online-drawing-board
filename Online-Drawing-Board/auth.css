@@ -140,6 +140,7 @@ body {
     font-weight: 700;
     font-size: 1.8rem;
     background: var(--btn-gradient);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     letter-spacing: -0.5px;
