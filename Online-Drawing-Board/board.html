@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Atharv's Drawing Board </title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+    <script type="module" src="app-auth.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="icon" href="logo.png" type="image/png">
+</head>
+<body>
+    <!-- Loading Spinner Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p>Authenticating...</p>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="header-branding">
+        <div class="brand">
+            <img src="logo.png" alt="Logo" class="header-logo">
+            Atharv's Drawing Board 
+        </div>
+        <div class="tagline">
+            Imagine, Sketch, Reconcise
+        </div>
+    </div>
+
+    <div class="user-profile" id="user-profile" style="display: none;">
+        <img id="profile-pic" src="" alt="Profile">
+        <span id="profile-email"></span>
+        <button id="logout-btn" title="Logout">🚪</button>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="canvas"></canvas>
+        <canvas id="overlay-canvas"></canvas>
+    </div>
+    <div class="placement-controls" id="placement-controls">
+        <button id="confirm-placement" data-tooltip="Confirm Placement">✔️</button>
+        <button id="cancel-placement" data-tooltip="Cancel">❌</button>
+    </div>
+    
+    <div class="text-nav" id="text-nav">
+        <select id="font-family" title="Font Family">
+            <option value="Arial">Arial</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Trebuchet MS">Trebuchet MS</option>
+            <option value="Impact">Impact</option>
+            <option value="Comic Sans MS">Comic Sans MS</option>
+        </select>
+        <input type="number" id="text-size" value="24" min="8" max="150" title="Font Size">
+        <input type="color" id="text-color" value="#000000" title="Text Color">
+        <button id="bold-btn" class="text-style-btn" title="Bold"><b>B</b></button>
+        <button id="italic-btn" class="text-style-btn" title="Italic"><i>I</i></button>
+        <button id="underline-btn" class="text-style-btn" title="Underline"><u>U</u></button>
+        <button id="close-text-btn">Done</button>
+    </div>
+
+    <div class="nav">
+        <div class="clr" data-clr="red"></div>
+        <div class="clr" data-clr="orange"></div>
+        <div class="clr" data-clr="yellow"></div>
+        <div class="clr" data-clr="blue"></div>
+        <div class="clr" data-clr="purple"></div>
+        <div class="clr" data-clr="yellowgreen"></div>
+        <div class="clr" data-clr="#000"></div>
+        <div class="clr" data-clr="#fff"></div>
+        <select id="tool-select" title="Choose Tool">
+            <option value="freehand">Freehand</option>
+            <option value="line">Straight Line</option>
+            <option value="rectangle">Rectangle</option>
+            <option value="circle">Circle</option>
+            <option value="triangle">Triangle</option>
+            <option value="star">Star</option>
+            <option value="fill">Fill (Paint Bucket)</option>
+        </select>
+        <button class="theme-toggle" title="Toggle Theme">🌙</button> <!-- Theme Toggle -->
+        <button class="text-tool-btn" title="Add Text">✍️</button> <!-- Add Text -->
+        <button class="undo" title="Undo">↩️</button> <!-- Undo -->
+        <button class="redo" title="Redo">↪️</button> <!-- Redo -->
+        <button class="upload-btn" title="Upload Image">⬆️</button> <!-- Upload -->
+        <button class="eraser" title="Eraser">🧼</button> <!-- Eraser -->
+        <button class="clear" title="Clear Canvas">🗑️</button> <!-- Clear -->
+        <button class="save" title="Save as PNG">💾</button> <!-- Save PNG -->
+        <button class="save-pdf" title="Save as PDF">📄</button> <!-- Save PDF -->
+        <button id="save-cloud-btn" title="Save to Cloud">☁️</button> <!-- Save to Cloud -->
+        <button id="gallery-btn" title="My Gallery">🖼️</button> <!-- View Gallery -->
+        <input type="color" id="favcolor" value="#000000" title="Custom Brush Color">
+        <input type="range" name="ageInputName" id="ageInputId" value="5" min="1" max="50" oninput="ageOutputId.value = ageInputId.value" title="Brush Size">
+        <output id="ageOutputId">5</output> <!-- Brush Size Output -->
+        <input type="file" id="upload" accept="image/*" style="display: none;">
+    </div>
+
+    <footer>
+        &copy; Programmed & Managed by <a href="https://www.linkedin.com/in/ananya-parbat/" target="_blank" style="color: inherit; text-decoration: underline;">Ananya</a> & <a href="https://www.linkedin.com/in/abowlekar/" target="_blank" style="color: inherit; text-decoration: underline;">Atharv</a> - Sept 2025
+    </footer>
+</body>
+</html>

@@ -21,7 +21,7 @@ let currentUser = null;
 // Protect route: Immediately boot user if they shouldn't be here
 onAuthStateChanged(auth, (user) => {
     if (!user) {
-        window.location.replace("login.html");
+        window.location.replace("index.html");
     } else {
         const loadingOverlay = document.getElementById('loading-overlay');
         if (loadingOverlay) loadingOverlay.classList.add('hidden');

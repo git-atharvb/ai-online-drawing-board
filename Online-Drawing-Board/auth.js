@@ -67,7 +67,7 @@ signupForm.addEventListener('submit', (e) => {
     showLoading();
 
     createUserWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.href = "index.html")
+        .then(() => window.location.href = "board.html")
         .catch((error) => {
             hideLoading();
             signupError.textContent = error.message.replace("Firebase: ", "");
@@ -82,7 +82,7 @@ loginForm.addEventListener('submit', (e) => {
     showLoading();
 
     signInWithEmailAndPassword(auth, email, password)
-        .then(() => window.location.href = "index.html")
+        .then(() => window.location.href = "board.html")
         .catch((error) => {
             hideLoading();
             loginError.textContent = error.message.replace("Firebase: ", "");
@@ -94,7 +94,7 @@ googleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         showLoading();
         signInWithPopup(auth, googleProvider)
-            .then(() => window.location.href = "index.html")
+            .then(() => window.location.href = "board.html")
             .catch((error) => {
                 hideLoading();
                 loginError.textContent = error.message.replace("Firebase: ", "");
@@ -110,5 +110,5 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // If a user goes directly to login.html while authenticated, push them back inside
 onAuthStateChanged(auth, (user) => {
-    if (user) window.location.href = "index.html";
+    if (user) window.location.href = "board.html";
 });
